@@ -1,85 +1,25 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import logger from './logger.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+/**
+ * TestHelpers - General test utility methods for Playwright tests
+ * Not specific to recording, but essential for test functionality
+ */
 class TestHelpers {
-  static async takeScreenshot(page, testName, stepName) {
-    const screenshotDir = path.join(process.cwd(), 'test-results', 'screenshots');
-
-    const dirExists = fs.existsSync(screenshotDir);
-    if (!dirExists) {
-      fs.mkdirSync(screenshotDir, { recursive: true });
+  /**
+   * Generate random string for test data
+   */
+  static generateRandomString(length = 8) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `${testName}_${stepName}_${timestamp}.png`;
-    const filePath = path.join(screenshotDir, filename);
-
-    await page.screenshot({ path: filename, fullPage: true });
-    logger.info(`Screenshot saved: ${filename}`);
-
-    return filePath;
+    return result;
   }
 
-  static async clearBrowserCache(page) {
-    logger.action('Clearing browser cache and session data...');
-
-    const context = page.context();
-
-    await context.clearCookies();
-    logger.info('Cookies cleared');
-
-    await page.evaluate(() => {
-      const hasLocalStorage = window.localStorage;
-      if (hasLocalStorage) {
-        window.localStorage.clear();
-      }
-
-      const hasSessionStorage = window.sessionStorage;
-      if (hasSessionStorage) {
-        window.sessionStorage.clear();
-      }
-
-      const hasIndexedDB = window.indexedDB;
-      if (hasIndexedDB) {
-        window.indexedDB.databases().then(databases => {
-          databases.forEach(db => {
-            window.indexedDB.deleteDatabase(db.name);
-          });
-        }).catch(() => {});
-      }
-
-      const hasCaches = 'caches' in window;
-      if (hasCaches) {
-        caches.keys().then(cacheNames => {
-          cacheNames.forEach(cacheName => {
-            caches.delete(cacheName);
-          });
-        }).catch(() => {});
-      }
-
-      const hasServiceWorker = 'serviceWorker' in navigator;
-      if (hasServiceWorker) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(registration => {
-            registration.unregister();
-          });
-        }).catch(() => {});
-      }
-    });
-
-    logger.info('Browser storage and cache cleared');
-
-    await page.goto('about:blank');
-    await page.waitForTimeout(500);
-
-    logger.success('Browser cache clearing completed');
-  }
-
+  /**
+   * Wait for element to appear - core Playwright functionality
+   */
   static async waitForElement(page, selector, timeout = 10000) {
     const elementFound = await page.waitForSelector(selector, { timeout }).then(() => true).catch(() => false);
     if (!elementFound) {
@@ -88,6 +28,9 @@ class TestHelpers {
     return elementFound;
   }
 
+  /**
+   * Wait for element to disappear - useful for loading states
+   */
   static async waitForElementToDisappear(page, selector, timeout = 10000) {
     const elementHidden = await page.waitForSelector(selector, { state: 'hidden', timeout }).then(() => true).catch(() => false);
     if (!elementHidden) {
@@ -96,6 +39,9 @@ class TestHelpers {
     return elementHidden;
   }
 
+  /**
+   * Retry action with exponential backoff - essential for flaky tests
+   */
   static async retryAction(action, maxRetries = 3, delay = 1000) {
     for (let i = 0; i < maxRetries; i++) {
       const actionSucceeded = await action().then(() => true).catch((error) => {
@@ -115,16 +61,63 @@ class TestHelpers {
     }
   }
 
+  /**
+   * Get element text content safely
+   */
+  static async getElementText(page, selector) {
+    const element = page.locator(selector).first();
+    const text = await element.textContent().catch(() => {
+      logger.warning(`Could not get text from element: ${selector}`);
+      return null;
+    });
+    return text;
+  }
+
+  /**
+   * Check if element is visible
+   */
+  static async isElementVisible(page, selector) {
+    const element = page.locator(selector).first();
+    const isVisible = await element.isVisible().catch(() => false);
+    return isVisible;
+  }
+
+  /**
+   * Scroll element into view if needed
+   */
+  static async scrollIntoView(page, selector) {
+    const scrollSuccessful = await page.locator(selector).scrollIntoViewIfNeeded().then(() => true).catch(() => {
+      logger.warning(`Could not scroll to element: ${selector}`);
+      return false;
+    });
+    return scrollSuccessful;
+  }
+
+  /**
+   * Click element safely with wait
+   */
+  static async clickElementSafely(page, selector, timeout = 10000) {
+    await page.waitForSelector(selector, { timeout });
+    await page.click(selector);
+  }
+
+  /**
+   * Wait for page load to complete
+   */
+  static async waitForPageLoad(page, timeout = 30000) {
+    await page.waitForLoadState('networkidle', { timeout });
+  }
+
+  /**
+   * Sleep utility
+   */
   static async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  static async clearBrowserData(context) {
-    await context.clearCookies();
-    await context.clearPermissions();
-    logger.info('Browser data cleared');
-  }
-
+  /**
+   * Handle browser dialogs
+   */
   static async handleDialog(page, accept = true) {
     page.on('dialog', async dialog => {
       logger.info(`Dialog appeared: ${dialog.message()}`);
@@ -137,28 +130,22 @@ class TestHelpers {
     });
   }
 
-  static generateTestReport(testResults) {
-    const report = {
-      timestamp: new Date().toISOString(),
-      totalTests: testResults.length,
-      passed: testResults.filter(r => r.status === 'passed').length,
-      failed: testResults.filter(r => r.status === 'failed').length,
-      results: testResults
-    };
-
-    const reportDir = path.join(process.cwd(), 'test-results', 'reports');
-    const dirExists = fs.existsSync(reportDir);
-    if (!dirExists) {
-      fs.mkdirSync(reportDir, { recursive: true });
-    }
-
-    const reportFile = path.join(reportDir, `test-report-${Date.now()}.json`);
-    fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
-
-    logger.success(`Test report generated: ${reportFile}`);
-    return report;
+  /**
+   * Handle alerts specifically
+   */
+  static async handleAlert(page, action = 'accept') {
+    page.on('dialog', async dialog => {
+      if (action === 'accept') {
+        await dialog.accept();
+      } else {
+        await dialog.dismiss();
+      }
+    });
   }
 
+  /**
+   * Log test steps - currently used methods need to stay
+   */
   static async logTestStep(stepName, details = '') {
     const timestamp = new Date().toISOString();
     const hasDetails = details;
@@ -166,40 +153,12 @@ class TestHelpers {
     logger.step(stepName, details);
   }
 
-  static async waitForNetworkIdle(page, timeout = 10000) {
-    const networkIdleAchieved = await page.waitForLoadState('networkidle', { timeout }).then(() => true).catch(() => false);
-    if (!networkIdleAchieved) {
-      logger.warning('Network idle timeout reached');
-    }
-    return networkIdleAchieved;
-  }
-
-  static async getElementText(page, selector) {
-    const element = page.locator(selector).first();
-    const text = await element.textContent().catch(() => {
-      logger.warning(`Could not get text from element: ${selector}`);
-      return null;
-    });
-    return text;
-  }
-
-  static async isElementVisible(page, selector) {
-    const element = page.locator(selector).first();
-    const isVisible = await element.isVisible().catch(() => false);
-    return isVisible;
-  }
-
+  /**
+   * Format test duration - currently used method
+   */
   static formatDuration(startTime, endTime) {
     const duration = endTime - startTime;
     return `${duration}ms`;
-  }
-
-  static async scrollIntoView(page, selector) {
-    const scrollSuccessful = await page.locator(selector).scrollIntoViewIfNeeded().then(() => true).catch(() => {
-      logger.warning(`Could not scroll to element: ${selector}`);
-      return false;
-    });
-    return scrollSuccessful;
   }
 }
 
