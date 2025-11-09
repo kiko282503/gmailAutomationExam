@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import TOTPGenerator from '../utils/totpGenerator.js';
 import { gmailLocators } from '../locators/gmailLocators.js';
 import BrowserConstants from '../utils/browserConstants.js';
-import { URLS, TIMEOUTS, KEYBOARD, LOAD_STATES, ERROR_MESSAGES, HELPERS } from '../constants/appConstants.js';
+import { URLS, TIMEOUTS, KEYBOARD, LOAD_STATES, ERROR_MESSAGES, HELPERS, RETRY } from '../constants/appConstants.js';
 import logger from '../utils/logger.js';
 
 class LoginPage {

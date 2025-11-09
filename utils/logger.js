@@ -14,6 +14,7 @@ class Logger {
   constructor() {
     this.logDir = path.join(process.cwd(), 'logs');
     this.logFile = path.join(this.logDir, `automation-${this.formatDate()}.log`);
+    this.consoleVerbose = process.env.LOGGER_VERBOSE === 'true' || process.env.NODE_ENV === 'development';
     this.sensitivePatterns = [
       // Email patterns
       /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
@@ -136,13 +137,17 @@ class Logger {
   debug(message, context = '') {
     if (process.env.DEBUG === 'true') {
       this.writeLog('DEBUG', message, context);
-      console.log(`🔍 ${this.sanitizeMessage(message)}`);
+      if (this.consoleVerbose) {
+        console.log(`🔍 ${this.sanitizeMessage(message)}`);
+      }
     }
   }
 
   step(stepName, details = '') {
     this.writeLog('STEP', `${stepName}${details ? ` - ${details}` : ''}`, '');
-    console.log(`🔄 ${stepName}${details ? ` - ${this.sanitizeMessage(details)}` : ''}`);
+    if (this.consoleVerbose) {
+      console.log(`🔄 ${stepName}${details ? ` - ${this.sanitizeMessage(details)}` : ''}`);
+    }
   }
 
   testStart(testName) {
@@ -157,12 +162,16 @@ class Logger {
 
   action(actionName, target = '') {
     this.writeLog('ACTION', `${actionName}${target ? ` on ${target}` : ''}`, '');
-    console.log(`⚡ ${actionName}${target ? ` on ${this.sanitizeMessage(target)}` : ''}`);
+    if (this.consoleVerbose) {
+      console.log(`⚡ ${actionName}${target ? ` on ${this.sanitizeMessage(target)}` : ''}`);
+    }
   }
 
   verification(message, result = '') {
     this.writeLog('VERIFICATION', `${message}${result ? ` | Result: ${result}` : ''}`, '');
-    console.log(`🔍 ${message}${result ? ` | Result: ${this.sanitizeMessage(result)}` : ''}`);
+    if (this.consoleVerbose) {
+      console.log(`🔍 ${message}${result ? ` | Result: ${this.sanitizeMessage(result)}` : ''}`);
+    }
   }
 
   performance(operation, duration) {
