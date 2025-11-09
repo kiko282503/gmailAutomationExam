@@ -1,0 +1,53 @@
+{
+  "credentials": {
+    "valid": {
+      "email": "j.francisco8281@gmail.com",
+      "password": "freedom2k17",
+      "totpKey": "oqjz aair jfkr lgi2 j6rb st56 trgy lwvv",
+      "useTotp": true
+    },
+    "invalid": {
+      "email": "j,francisco8281@gmail.com",
+      "password": "wrongpassword",
+      "totpKey": "",
+      "useTotp": false
+    }
+  },
+  "emails": {
+    "email1": {
+      "recipient": "jfrancisco131082@gmail.com",
+      "subject": "Test Email 1 - Playwright Automation",
+      "body": "Hello! This is a test email sent via Playwright automation from j.francisco8281@gmail.com. Testing successful!"
+    },
+    "email2": {
+      "recipient": "j.francis20@gmails.com",
+      "subject": "Test Email 2 - Automated Testing",
+      "body": "This is the second test email for our automation suite. This email contains important test data."
+    },
+    "email3": {
+      "recipient": "recipient3@example.com",
+      "subject": "Test Email 3 - Final Test",
+      "body": "This is the third and final test email. Our automation testing is now complete."
+    },
+    "invalidEmail": {
+      "recipient": "",
+      "subject": "Email without recipient",
+      "body": "This email should fail to send due to missing recipient."
+    },
+    "noRecipientEmail": {
+      "recipient": "",
+      "subject": "Email without recipient",
+      "body": "This email is missing a recipient to test error handling."
+    }
+  },
+  "urls": {
+    "login": "https://accounts.google.com/signin",
+    "gmail": "https://mail.google.com",
+    "googleLogin": "https://accounts.google.com"
+  },
+  "timeouts": {
+    "short": 5000,
+    "medium": 10000,
+    "long": 30000
+  }
+}
