@@ -30,10 +30,13 @@ export const gmailLocators = {
 
   // Inbox Page Locators
   inbox: {
-    composeButton: '.T-I.T-I-KE.L3',
+    // Compose button - using more stable semantic selectors
+    composeButton: '[role="button"][aria-label*="Compose"]',
     composeButtonAlt: 'div[data-tooltip="Compose"]',
-    emailRow: '.zA',
-    firstEmail: '.zA:first-child',
+    
+    // Email row selectors - using more stable semantic selectors
+    emailRow: 'tr[role="listitem"]',
+    firstEmail: 'tr[role="listitem"]:first-of-type',
     emailSubject: '.bog',
     emailSender: '.yW',
     backToInboxButton: '.ar9.T-I-J3.J-J5-Ji',
@@ -44,7 +47,7 @@ export const gmailLocators = {
     loadingIndicator: '.aKh',
     progressBar: '.nH .aKh',
     gmailMainContainer: '.nH',
-    gmailComposeBtn: '.T-I.T-I-KE.L3',
+    gmailComposeBtn: '[role="button"][aria-label*="Compose"]',
     gmailSidebar: '.ako',
     gmailMainContent: '[role="main"]',
     gmailNavigation: '.nZ',
@@ -72,11 +75,13 @@ export const gmailLocators = {
     bccInput: 'input[aria-label="Bcc recipients"]',
     subjectField: 'input[name="subjectbox"]',
     subjectFieldAlt: 'input[aria-label="Subject"]',
-    bodyField: '.Am.Al.editable',
-    bodyFieldAlt: 'div[aria-label="Message Body"]',
-    sendButton: '.T-I.J-J5-Ji.aoO.v7.T-I-atl.L3',
+    bodyField: 'div[aria-label="Message Body"]',
+    bodyFieldAlt: '.Am.Al.editable',
+    
+    // Send button - using more stable selectors
+    sendButton: '[role="button"][aria-label*="Send"]',
     sendButtonAlt: '[data-tooltip="Send ⌘+Enter"]',
-    sendButtonIcon: '.J-J5-Ji.J-JN-I.J-J5-Ji.L3.J-JN-M.I-J-Ji3-Jh',
+    sendButtonText: 'div[role="button"]:has-text("Send")',
     saveButton: '.J-J5-Ji.J-JN-I.J-J5-Ji.ar4.L3.J-JN-M.I-J-Ji3-Jh',
     discardButton: '.Ha .aao',
     closeButton: '.Ha .aao',
@@ -95,11 +100,11 @@ export const gmailLocators = {
     recipientErrorDialog: 'div:has-text("Please specify at least one recipient.")',
     recipientErrorMessage: 'text="Please specify at least one recipient."',
     composeSelectors: [
-      '.T-I.T-I-KE.L3',
+      '[role="button"][aria-label*="Compose"]',
       'div[data-tooltip="Compose"]',
       '[role="button"]:has-text("Compose")',
       'button:has-text("Compose")',
-      '.T-I-KE'
+      'div[role="button"]:has-text("Compose")'
     ]
   },
 

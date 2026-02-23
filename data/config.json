@@ -1,13 +1,13 @@
 {
   "credentials": {
     "valid": {
-      "email": "j.francisco8281@gmail.com",
-      "password": "freedom2k17",
-      "totpKey": "oqjz aair jfkr lgi2 j6rb st56 trgy lwvv",
+      "email": "your-gmail@gmail.com",
+      "password": "your-app-password-or-regular-password",
+      "totpKey": "your-2fa-secret-key-with-spaces",
       "useTotp": true
     },
     "invalid": {
-      "email": "j,francisco8281@gmail.com",
+      "email": "your-gmail@gmail.com",
       "password": "wrongpassword",
       "totpKey": "",
       "useTotp": false
@@ -15,29 +15,34 @@
   },
   "emails": {
     "email1": {
-      "recipient": "jfrancisco131082@gmail.com",
+      "recipient": "your-gmail@gmail.com",
       "subject": "Test Email 1 - Playwright Automation",
       "body": "Hello! This is a test email sent via Playwright automation from j.francisco8281@gmail.com. Testing successful!"
     },
     "email2": {
-      "recipient": "j.francis20@gmails.com",
+      "recipient": "your-gmail@gmail.com",
       "subject": "Test Email 2 - Automated Testing",
       "body": "This is the second test email for our automation suite. This email contains important test data."
     },
     "email3": {
-      "recipient": "recipient3@example.com",
+      "recipient": "your-gmail@gmail.com",
       "subject": "Test Email 3 - Final Test",
       "body": "This is the third and final test email. Our automation testing is now complete."
     },
     "invalidEmail": {
-      "recipient": "",
-      "subject": "Email without recipient",
-      "body": "This email should fail to send due to missing recipient."
+      "recipient": "your-gmail@gmail.com",
+      "subject": "Invalid Email Recipient Test",
+      "body": "This is the second test email for our automation suite. This email recipient is invalid."
     },
     "noRecipientEmail": {
       "recipient": "",
       "subject": "Email without recipient",
       "body": "This email is missing a recipient to test error handling."
+    },
+    "noSubjectEmail": {
+      "recipient": "your-gmail@gmail.com",
+      "subject": "",
+      "body": "This email is missing a subject to test error handling."
     }
   },
   "urls": {

@@ -70,7 +70,7 @@ class InboxPage {
       const isVisible = await this.page.isVisible(selector, { timeout: 5000 });
       if (isVisible) {
         await this.page.click(selector);
-        logger.success(`Successfully clicked compose button with: ${selector}`);
+        logger.success('Successfully clicked compose button');
         composeClicked = true;
         break;
       }
@@ -89,10 +89,10 @@ class InboxPage {
     logger.action('Looking for emails in inbox...');
 
     const emailSelectors = [
-      this.elements.emailRow,
-      'tr[role="listitem"]',
-      '.zA',
-      '[data-legacy-thread-id]'
+      this.elements.emailRow,        // 'tr[role="listitem"]' - semantic selector
+      'tr[role="listitem"]',         // Direct semantic selector
+      '[data-legacy-thread-id]',    // Gmail data attribute
+      '.zA'                          // Fallback cryptic selector
     ];
 
     let emailsFound = false;
@@ -129,7 +129,7 @@ class InboxPage {
       const isVisible = await this.page.isVisible(selector, { timeout: 3000 });
       if (isVisible) {
         await this.page.click(selector);
-        logger.success(`Successfully clicked back button with: ${selector}`);
+        logger.success('Successfully clicked back button');
         navigatedBack = true;
         break;
       }
@@ -149,7 +149,7 @@ class InboxPage {
         const isVisible = await this.page.isVisible(selector, { timeout: 2000 });
         if (isVisible) {
           await this.page.click(selector);
-          logger.success(`Clicked sidebar inbox with: ${selector}`);
+          logger.success('Clicked sidebar inbox');
           navigatedBack = true;
           break;
         }

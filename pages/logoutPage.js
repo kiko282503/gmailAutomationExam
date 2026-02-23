@@ -82,7 +82,7 @@ class LogoutPage {
         if (hasSignOutElement) {
           const elementVisible = await signOutElement.isVisible();
           if (elementVisible) {
-            logger.action(`Clicking sign out in iframe with: ${selector}`);
+            logger.action('Clicking sign out in iframe');
 
             const clickSucceeded = await signOutElement.click({ force: true, timeout: TIMEOUTS.CLICK_TIMEOUT }).then(() => true).catch(() => false);
             if (!clickSucceeded) {

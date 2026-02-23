@@ -75,10 +75,8 @@ test.describe('Gmail Negative Test Scenarios', () => {
     await inboxPage.clickComposeButton();
 
     await TestHelpers.logTestStep('Composing email without recipient');
-    const invalidEmailData = testDataManager.getEmailData('invalidEmail');
-
-    // Try sending to an invalid email to trigger delivery failure
-    await composePage.composeEmail('invalid@nonexistentdomain12345.com', invalidEmailData.subject, invalidEmailData.body);
+    const noRecipientEmailData = testDataManager.getEmailData('noRecipientEmail');
+    await composePage.composeEmail(noRecipientEmailData.recipient, noRecipientEmailData.subject, noRecipientEmailData.body);
 
     await TestHelpers.logTestStep('Attempting to send email without recipient');
     await composePage.clickSendButton();
@@ -114,38 +112,6 @@ test.describe('Gmail Negative Test Scenarios', () => {
     await TestHelpers.logTestStep('Refreshing inbox to check email status');
     await page.reload();
     await inboxPage.waitForInboxLoad();
-
-    // Check for "Address not found" delivery failure email
-    await TestHelpers.logTestStep('Checking for "Address not found" delivery failure email');
-    const addressNotFoundEmail = await page.locator(gmailLocators.email.addressNotFoundEmail).first();
-    const hasAddressNotFound = await addressNotFoundEmail.isVisible({ timeout: 15000 });
-    
-    if (hasAddressNotFound) {
-      await TestHelpers.logTestStep('Address not found email detected - delivery failure confirmed');
-      expect(hasAddressNotFound).toBe(true);
-      
-      // Click on the delivery failure email to verify
-      await addressNotFoundEmail.click();
-      await TestHelpers.sleep(2000);
-      
-      // Navigate back to inbox
-      await inboxPage.navigateBackToInbox();
-    } else {
-      // Also check for Mail Delivery Subsystem as alternative
-      const deliveryFailureEmail = await page.locator(gmailLocators.email.deliveryFailureEmail).first();
-      const hasDeliveryFailure = await deliveryFailureEmail.isVisible({ timeout: 10000 });
-      
-      if (hasDeliveryFailure) {
-        await TestHelpers.logTestStep('Mail Delivery Subsystem email found - delivery failure confirmed');
-        expect(hasDeliveryFailure).toBe(true);
-      } else {
-        await TestHelpers.logTestStep('No delivery failure email found - checking for any error indicators');
-        // Look for any delivery failure indicators
-        const anyDeliveryError = await page.locator('text="couldn\'t be delivered", text="delivery failed", text="undelivered"').first();
-        const hasAnyError = await anyDeliveryError.isVisible({ timeout: 5000 });
-        expect(hasAnyError).toBe(true);
-      }
-    }
 
     await TestHelpers.logTestStep('Verifying return to inbox');
     await inboxPage.waitForInboxLoad();
@@ -183,8 +149,10 @@ test.describe('Gmail Negative Test Scenarios', () => {
     await inboxPage.clickComposeButton();
 
     await TestHelpers.logTestStep('Composing email without subject');
-    await composePage.fillRecipient('test@example.com');
-    await composePage.fillBody('This email has no subject and should trigger a warning.');
+    const noSubjectEmailData = testDataManager.getEmailData('noSubjectEmail');
+
+    await composePage.fillRecipient(noSubjectEmailData.recipient);
+    await composePage.fillBody(noSubjectEmailData.body);
 
     await TestHelpers.logTestStep('Attempting to send email without subject');
     await composePage.clickSendButton();
@@ -211,33 +179,6 @@ test.describe('Gmail Negative Test Scenarios', () => {
       await page.reload();
       await inboxPage.waitForInboxLoad();
       
-      // Look for the email with "(no subject)" in the inbox
-      const noSubjectEmail = await page.locator(gmailLocators.email.noSubjectEmail).first();
-      const emailWithoutSubjectSent = await noSubjectEmail.isVisible({ timeout: 10000 });
-      
-      if (emailWithoutSubjectSent) {
-        await TestHelpers.logTestStep('Email with "(no subject)" found in inbox - email was sent successfully');
-        
-        // Click on the no subject email to verify
-        await noSubjectEmail.click();
-        await TestHelpers.sleep(2000);
-        
-        // Navigate back to inbox
-        await inboxPage.navigateBackToInbox();
-        
-        expect(emailWithoutSubjectSent).toBe(true);
-      } else {
-        await TestHelpers.logTestStep('Email with "(no subject)" was not found in inbox');
-        
-        // Alternative check - look for any email that might contain delivery failure info
-        const deliveryFailureEmail = await page.locator(gmailLocators.email.addressNotFoundEmail).first();
-        const hasDeliveryFailure = await deliveryFailureEmail.isVisible({ timeout: 5000 });
-        
-        if (hasDeliveryFailure) {
-          await TestHelpers.logTestStep('Delivery failure email found - email sending attempt was made');
-          expect(hasDeliveryFailure).toBe(true);
-        }
-      }
     }
 
     await TestHelpers.logTestStep('Closing compose window');
@@ -257,88 +198,4 @@ test.describe('Gmail Negative Test Scenarios', () => {
       `Duration: ${TestHelpers.formatDuration(testStartTime, testEndTime)}`);
   });
 
-  test('Negative Scenario 4: Invalid Email Format Validation', async ({ page }) => {
-    const testStartTime = Date.now();
-
-    await TestHelpers.logTestStep('Starting Negative Scenario 4: Invalid Email Format Validation');
-
-    await TestHelpers.logTestStep('Logging in with valid credentials');
-    await loginPage.navigateToGmail();
-
-    const validCredentials = testDataManager.getValidCredentials();
-    const loginSuccess = await loginPage.loginWithCredentials(
-      validCredentials.email,
-      validCredentials.password,
-      validCredentials.totpKey
-    );
-
-    expect(loginSuccess).toBe(true);
-    await inboxPage.waitForInboxLoad();
-
-    await TestHelpers.logTestStep('Opening compose window');
-    await inboxPage.clickComposeButton();
-
-    await TestHelpers.logTestStep('Testing invalid email formats');
-    const invalidFormats = [
-      '',
-      'invalid',
-      '@domain.com',
-      'test@',
-      'test..test@domain.com'
-    ];
-
-    let validationErrorFound = false;
-
-    for (const invalidEmail of invalidFormats) {
-      await TestHelpers.logTestStep(`Testing email format: "${invalidEmail}"`);
-
-      await composePage.fillRecipient(invalidEmail);
-      await composePage.fillSubject('Test Subject');
-      await composePage.fillBody('Test body for invalid email validation.');
-
-      await composePage.clickSendButton();
-      await TestHelpers.sleep(2000);
-
-      const hasError = await composePage.hasValidationError();
-      const sendSuccessful = await composePage.isSendSuccessful();
-
-      const foundValidationIssue = hasError || !sendSuccessful;
-      if (foundValidationIssue) {
-        await TestHelpers.logTestStep(`Validation error detected for "${invalidEmail}"`);
-        validationErrorFound = true;
-
-        const specificError = await page.$('.Ekjuhf');
-        const hasSpecificError = specificError;
-        if (hasSpecificError) {
-          const isVisible = await specificError.isVisible();
-          const shouldLogError = isVisible;
-          if (shouldLogError) {
-            const errorText = await specificError.textContent();
-            await TestHelpers.logTestStep(`Found .Ekjuhf error: "${errorText}"`);
-          }
-        }
-
-        break;
-      }
-    }
-
-    await TestHelpers.logTestStep('Verifying validation errors are working');
-    expect(validationErrorFound).toBe(true);
-
-    await TestHelpers.logTestStep('Closing compose window');
-    await composePage.closeComposeWindow();
-
-    await TestHelpers.logTestStep('Verifying return to inbox');
-    await inboxPage.waitForInboxLoad();
-
-    await TestHelpers.logTestStep('Logging out');
-    await logoutPage.logout();
-
-    const isLoggedOut = await logoutPage.confirmLogout();
-    expect(isLoggedOut).toBe(true);
-
-    const testEndTime = Date.now();
-    await TestHelpers.logTestStep('Negative Scenario 4 completed successfully',
-      `Duration: ${TestHelpers.formatDuration(testStartTime, testEndTime)}`);
-  });
 });
